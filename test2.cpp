@@ -1,3 +1,4 @@
+
 #include <SFML/Graphics.hpp>
 #include <time.h>
 #include "math.h"
@@ -23,7 +24,8 @@ const int H = 850;
 //position fenetre
 const int poswindowX=43;
 const int poswindowY=60;
-
+bool enable_tracker=0;
+bool enable_tracker_player=0;
 float DEGTORAD = 0.017453f;
 
 //Variable globale
@@ -196,17 +198,33 @@ class Entity
     // anim.sprite.setRotation(angle+30);
      app.draw(anim.sprite);
 
-   /*  RectangleShape rectangle;
+    RectangleShape rectangle;
+   
+    rectangle.setSize(sf::Vector2f(R*2.5, R*2.5));     
+    rectangle.setOrigin(-R,R*3);
+    rectangle.setPosition(x,y);
      
-     rectangle.setSize(sf::Vector2f(R*3, R*3));
+     if(!enable_tracker){
+     /* //Shape Line   = sf::Shape::Line(X1, Y1, X2, Y2, Epaisseur, Couleur, [Bordure], [CouleurBordure]);*/
+    //rectangle.setSize(sf::Vector2f(R*2.5, R*2.5)); 
+    rectangle.setSize(sf::Vector2f(R*5.0, R*5.0));     
+    rectangle.setOrigin(-R*1.3,R*3);
+    rectangle.setPosition(x,y);
+    rectangle.setFillColor(Color(0,255,0,80));
+     // Ligne diagonale du coin inférieur gauche au coin supérieur droit
+    sf::VertexArray diagonale(sf::Lines, 2);
+    diagonale[0].position = sf::Vector2f(rectangle.getPosition().x+R, rectangle.getPosition().y-R ); // coin inférieur gauche
+    diagonale[0].color = sf::Color::Red;
+    //diagonale[1].position = sf::Vector2f(rectangle.getPosition().x + rectangle.getSize().x, rectangle.getPosition().y); // coin supérieur droit
+   // diagonale[1].color = sf::Color::Red;
+    diagonale[1].position = sf::Vector2f(rectangle.getPosition().x +R/2, rectangle.getPosition().y -R/2);
+    diagonale[1].color = sf::Color::Red;
+
+ app.draw(rectangle);
+ app.draw(diagonale);
+   
      
-     rectangle.setOrigin(-R,R*3);
-     rectangle.setPosition(x,y);
-     rectangle.setFillColor(Color(0,255,0,80));
-     if(!"player"){
-     rectangle.setFillColor(Color(0,255,0,80));}
-     
-     app.draw(rectangle);*/
+     }else cout << "notracking" << endl;
 /*
      CircleShape circle(R);
      circle.setFillColor(Color(255,0,0,80));
