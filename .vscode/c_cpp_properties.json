@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Librairie/SFML-2.5.1/include",
+                "C:/PROJET/projetcpp/src/include/"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            
+            "intelliSenseMode":"${default}",
+            "compilerPath": "C:/mingw64/bin/g++"
+        }
+    ],
+    "version": 4
+}
