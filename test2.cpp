@@ -1,19 +1,14 @@
-
 #include <SFML/Graphics.hpp>
 #include <time.h>
 #include "math.h"
 #include <list>
 #include <SFML/System.hpp>
 #include <iostream>
-
 #include <cstdlib>
 #include <string>
 #include "vector"
-
-
-
-
-
+#include <cstdlib>
+#include "sstream"
 
 using namespace sf;
 using namespace std;
@@ -27,33 +22,8 @@ const int poswindowY=60;
 bool enable_tracker=0;
 bool enable_tracker_player=0;
 float DEGTORAD = 0.017453f;
-
-//Variable globale
-Font font;
-string police = "coding/font/arial.ttf";
-using namespace sf;
-
-//prototype de la fonction InputHandler
-void InputHandler(Event event, RenderWindow& app);
-
- Text txt1;
- Text txt3;
- 
- Text txt8;
- Color couleur1;
-  Color couleur;
-   Color choixcouleur;
-   int pos_text1_X= 10;
-   int pos_text1_Y=10;
-   int size1=52;
- string nouveautext="Player1:";
- int compteurscore=0000;
- string compteur="compteur:" +compteurscore;
- int size2=123;
- Color couleurcompteur;
-    string valeur,lapolice;
-    int size, posX,posY;
-   Text txt;
+bool DebugMode_all_entity=false;
+bool DebugMode_player=true;
 
 
 class Animation
@@ -93,88 +63,15 @@ class Animation
    }
 
 };
-class Rectangle{
-  public:
-    std::string name;
-     float x,y,dx,dy,R,angle;
-   bool life;
-   
-   //Animation anim;
-   RectangleShape rectangle;
-//constructeur
-Rectangle(){}
-Rectangle(string namerectangle,int X,int Y,float Angle=0,int radius=1){   
-     life=1;
-     this->name=namerectangle;
-    //this->rectangle=rectangle;
-     this->R=radius;
-     
-    // RectangleShape rectangle;
-    rectangle.setOrigin(-R,R*3);
-    rectangle.setSize(sf::Vector2f(R*3, R*3));
-    rectangle.setFillColor(Color(0,255,0,80));}
-    void AfficherRectangle(RenderWindow &app){
-app.draw(rectangle);  }
 
-};
-/*class Information
+
+class Entity
 {
    public:
    float x,y,dx,dy,R,angle;
    bool life;
    std::string name;
    Animation anim;
-   RectangleShape rectangle;
-
-   Information(string namerectangle,RectangleShape &rectangle)
-   {
-     life=1;
-     this->name=namerectangle;
-     this->rectangle=rectangle;
-     RectangleShape rectangle ;
-       rectangle.setOrigin(-R,R*3);
-    rectangle.setSize(sf::Vector2f(R*3, R*3));
-    rectangle.setFillColor(Color(0,255,0,80));
-   }
-
-   void settings(Animation &a,int X,int Y,float Angle=0,int radius=1)
-   {
-     anim = a;
-     x=X; y=Y;
-     angle = Angle;
-     R = radius;
-     
-   }
-
-   virtual void update(){};
-
-   void draw(RenderWindow &app,RectangleShape rectangle)
-   {
-      
-  
-    // anim.rectangle.setPosition(x,y);
-   //  anim.rectangle.setRotation(angle+90);
-    // anim.sprite.setRotation(angle+30);   
-   //  app.draw(anim.rectangle);
-     app.draw(rectangle);
-/*
-     CircleShape circle(R);
-     circle.setFillColor(Color(255,0,0,80));
-     circle.setPosition(x,y);
-     circle.setOrigin(R,R);
-     app.draw(circle);
-   }
-
-   virtual ~Information(){};
-};*/
-class Entity 
-{
-   public:
-   float x,y,dx,dy,R,angle;
-   bool life;
-   std::string name;
-   Animation anim;
-   Rectangle lerectangle;
 
    Entity()
    {
@@ -192,46 +89,44 @@ class Entity
    virtual void update(){};
 
    void draw(RenderWindow &app)
-   {
+   {       
      anim.sprite.setPosition(x,y);
      anim.sprite.setRotation(angle+90);
     // anim.sprite.setRotation(angle+30);
      app.draw(anim.sprite);
+  if(DebugMode_all_entity){
+        // 🔲 Hitbox (rectangle semi-transparent)
+   RectangleShape hitbox;
+    hitbox.setSize(Vector2f(R * 4, R * 4));
+    hitbox.setOrigin(R/2, R);
+    hitbox.setPosition(x, y);
+    hitbox.setFillColor(Color(255, 0, 0, 100)); // rouge transparent
+    app.draw(hitbox);
 
-    RectangleShape rectangle;
-   
-    rectangle.setSize(sf::Vector2f(R*2.5, R*2.5));     
-    rectangle.setOrigin(-R,R*3);
-    rectangle.setPosition(x,y);
-     
-     if(!enable_tracker){
-     /* //Shape Line   = sf::Shape::Line(X1, Y1, X2, Y2, Epaisseur, Couleur, [Bordure], [CouleurBordure]);*/
-    //rectangle.setSize(sf::Vector2f(R*2.5, R*2.5)); 
-    rectangle.setSize(sf::Vector2f(R*5.0, R*5.0));     
-    rectangle.setOrigin(-R*1.3,R*3);
-    rectangle.setPosition(x,y);
-    rectangle.setFillColor(Color(0,255,0,80));
-     // Ligne diagonale du coin inférieur gauche au coin supérieur droit
-    sf::VertexArray diagonale(sf::Lines, 2);
-    diagonale[0].position = sf::Vector2f(rectangle.getPosition().x+R, rectangle.getPosition().y-R ); // coin inférieur gauche
-    diagonale[0].color = sf::Color::Red;
-    //diagonale[1].position = sf::Vector2f(rectangle.getPosition().x + rectangle.getSize().x, rectangle.getPosition().y); // coin supérieur droit
-   // diagonale[1].color = sf::Color::Red;
-    diagonale[1].position = sf::Vector2f(rectangle.getPosition().x +R/2, rectangle.getPosition().y -R/2);
-    diagonale[1].color = sf::Color::Red;
+    // 📝 Texte de debug
+    Font font;
+    font.loadFromFile("./src/fonts/arial.ttf"); // Assure-toi que le fichier existe
 
- app.draw(rectangle);
- app.draw(diagonale);
-   
-     
-     }else cout << "notracking" << endl;
-/*
-     CircleShape circle(R);
-     circle.setFillColor(Color(255,0,0,80));
-     circle.setPosition(x,y);
-     circle.setOrigin(R,R);
-     app.draw(circle);*/
+    Text debugText;
+    debugText.setFont(font);
+    debugText.setCharacterSize(12);
+    debugText.setFillColor(Color::White);
+
+    std::ostringstream ss;
+ss << "/src/fonts/arial.ttf";
+
+    ss << "Name: " << name << "\n";
+    ss << "Pos: (" << int(x) << ", " << int(y) << ")\n";
+    ss << "Speed: (" << dx << ", " << dy << ")\n";
+    ss << "Angle: " << int(angle);
+
+   debugText.setString(ss.str());
+
+    debugText.setPosition(x + R + 5, y - R);
+    app.draw(debugText);
+  }
    }
+
 
    virtual ~Entity(){};
 };
@@ -242,20 +137,22 @@ class asteroid: public Entity
    public:
    asteroid()
    {
-     dx=rand()%8-4;
-     dy=rand()%8-4;
+     //dx=rand()%8-4;
+     //dy=rand()%8-4;
+      dx=rand()%2-1;
+     dy=rand()%2-1;
      name="asteroid";
    }
 
    void update()
    {
-       
-     x+=dx/2;
-     y+=dy/2;
+     x+=dx;
+     y+=dy;
 
      if (x>W) x=0;  if (x<0) x=W;
      if (y>H) y=0;  if (y<0) y=H;
    }
+
 
 };
 
@@ -266,19 +163,16 @@ class bullet: public Entity
    bullet()
    {
      name="bullet";
-     
    }
 
    void  update()
    {
-   
-     dx=cos(angle*DEGTORAD)*13;
-     dy=sin(angle*DEGTORAD)*13;
-    //  angle+=rand()%7-3;  /*try this* tir en angle*/
-      //vistesse deplacement du tir
-     x+=dx/2;
-     y+=dy/2;
-   
+     dx=cos(angle*DEGTORAD)*6;
+     dy=sin(angle*DEGTORAD)*6;
+     // angle+=rand()%7-3;  /*try this*/
+     x+=dx;
+     y+=dy;
+
      if (x>W || x<0 || y>H || y<0) life=0;
    }
 
@@ -289,9 +183,7 @@ class player: public Entity
 {
    public:
    bool thrust;
-   bool spaceshipleft=false;
 
-    string getplayername(){return name;}
    player()
    {
      name="player";
@@ -300,15 +192,8 @@ class player: public Entity
    void update()
    {
      if (thrust)
-      { dx+=cos(angle*DEGTORAD)*0.8;
-        dy+=sin(angle*DEGTORAD)*0.8; }if (spaceshipleft)
-
-        {
-          dx+=0.99;
-          dy=0;
-        }
-        
-
+      { dx+=cos(angle*DEGTORAD)*0.2;
+        dy+=sin(angle*DEGTORAD)*0.2; }
      else
       { dx*=0.99;
         dy*=0.99; }
@@ -325,6 +210,40 @@ class player: public Entity
     if (x>W) x=0; if (x<0) x=W;
     if (y>H) y=0; if (y<0) y=H;
    }
+   void Drawhitplayer(RenderWindow &app){
+   if(DebugMode_player){
+
+   Entity::draw(app); // Dessine le sprite normalement
+      // 🔲 Hitbox (rectangle semi-transparent)
+   RectangleShape hitboxplayer;
+    hitboxplayer.setSize(Vector2f(R * 4, R * 4));
+    hitboxplayer.setOrigin(R/2, R);
+    hitboxplayer.setPosition(x, y);
+    hitboxplayer.setFillColor(Color(255, 0, 0, 100)); // rouge transparent
+    app.draw(hitboxplayer);
+    // 🧠 Infos de debug spécifiques au joueur
+    Font font;
+    font.loadFromFile("./src/fonts/arial.ttf");
+
+    Text debugText;
+    debugText.setFont(font);
+    debugText.setCharacterSize(24);
+    debugText.setFillColor(Color::Green);
+
+        std::ostringstream ss;
+    ss << "/src/fonts/arial.ttf";
+    ss << "PLAYER DEBUG\n";
+    ss << "Pos: x,y:(" << int(x) << "," << int(y) << ")\n";
+    ss << "Speed: dx,dy (" << dx << ", " << dy << ")\n";
+    ss << "Angle: R: " << int(angle);
+
+    debugText.setString(ss.str());
+   // debugText.setPosition(x + R + 10, y - R - 20);
+    debugText.setPosition(x + R + 5, y - R);
+    app.draw(debugText);
+
+   }
+  }
 
 };
 
@@ -342,8 +261,6 @@ int main()
     srand(time(0));
 
     RenderWindow app(VideoMode(W, H), "Asteroids!");
-    //position de la fenetre;
-    app.setPosition(sf::Vector2i(poswindowX,poswindowY));
     app.setFramerateLimit(60);
 
     Texture t1,t2,t3,t4,t5,t6,t7;
@@ -354,17 +271,11 @@ int main()
     t5.loadFromFile("./src/images/fire_blue.png");
     t6.loadFromFile("./src/images/rock_small.png");
     t7.loadFromFile("./src/images/explosions/type_B.png");
-    
 
     t1.setSmooth(true);
     t2.setSmooth(true);
 
     Sprite background(t2);
-   int var = pos_text1_X;
-   string var2 = "\"la var \"+ var"  ;
-   
-
-     
 
     Animation sExplosion(t3, 0,0,256,256, 48, 0.5);
     Animation sRock(t4, 0,0,64,64, 16, 0.2);
@@ -372,17 +283,12 @@ int main()
     Animation sBullet(t5, 0,0,32,64, 16, 0.8);
     Animation sPlayer(t1, 40,0,40,40, 1, 0);
     Animation sPlayer_go(t1, 40,40,40,40, 1, 0);
-    Animation sPlayer_left(t1, 0,0,40,40, 1, 0);
-    Animation sExplosion_ship(t7, 0,0,192,192,68, 0.5);
-   // Animation sExplosion_ship(t7, 0,0,800,500,48, 0);
+    Animation sExplosion_ship(t7, 0,0,192,192, 64, 0.5);
 
- // Load the sounds used in the game
-
-   
 
     std::list<Entity*> entities;
-//nbr asteroide grand
-    for(int i=0;i<6;i++)
+
+    for(int i=0;i<15;i++)
     {
       asteroid *a = new asteroid();
       a->settings(sRock, rand()%W, rand()%H, rand()%360, 25);
@@ -400,45 +306,30 @@ int main()
         Event event;
         while (app.pollEvent(event))
         {
-            
-//Gestion des evenements fonction inputhandler
+            if (event.type == Event::Closed)
+                app.close();
+
             if (event.type == Event::KeyPressed)
-            //Gestion du tir
              if (event.key.code == Keyboard::Space)
               {
                 bullet *b = new bullet();
                 b->settings(sBullet,p->x,p->y,p->angle,10);
                 entities.push_back(b);
-              
               }
-          //Gestion des evenements fonction inputhandler
-              //Gestion du deplacement vaisseau
-              if(event.key.code == Keyboard::Right) p->angle+=3;
-              if(event.key.code == Keyboard::Left) p->angle-=3;
-              
-              //version avec sprite vers la gauche.
-              //if((event.key.code == Keyboard::Left)&&(p->spaceshipleft=true))p->angle-=3;
-              //else p->spaceshipleft=false;
-              if(event.key.code == Keyboard::Up) p->thrust=true;
-              else p->thrust=false;
-              //fermeture de la fenetre par echape ou par croix
-              //appel de la fonction InputHandler
-              InputHandler(event,app);
-        
-           
         }
 
- 
+    if (Keyboard::isKeyPressed(Keyboard::Right)) p->angle+=3;
+    if (Keyboard::isKeyPressed(Keyboard::Left))  p->angle-=3;
+    if (Keyboard::isKeyPressed(Keyboard::Up)) p->thrust=true;
+    else p->thrust=false;
+
 
     for(auto a:entities)
-  
      for(auto b:entities)
      {
-     
-if (a->name=="asteroid" && b->name=="bullet")
+      if (a->name=="asteroid" && b->name=="bullet")
        if ( isCollide(a,b) )
            {
-            
             a->life=false;
             b->life=false;
 
@@ -446,8 +337,8 @@ if (a->name=="asteroid" && b->name=="bullet")
             e->settings(sExplosion,a->x,a->y);
             e->name="explosion";
             entities.push_back(e);
-            
-            //nombre de sération grand rock en small
+
+
             for(int i=0;i<2;i++)
             {
              if (a->R==15) continue;
@@ -457,28 +348,24 @@ if (a->name=="asteroid" && b->name=="bullet")
             }
 
            }
+
       if (a->name=="player" && b->name=="asteroid")
        if ( isCollide(a,b) )
            {
-           
             b->life=false;
- 
+
             Entity *e = new Entity();
             e->settings(sExplosion_ship,a->x,a->y);
-           // e->settings(sExplosion,a->x,a->y);
             e->name="explosion";
             entities.push_back(e);
-            
 
             p->settings(sPlayer,W/2,H/2,0,20);
-           // p->settings(sPlayer,W/2,-750,0,20);
             p->dx=0; p->dy=0;
            }
      }
 
 
-    if (p->thrust) { p->anim = sPlayer_go;}
-    else if ((p->thrust)&&(p->spaceshipleft)) { p->anim = sPlayer_left;}
+    if (p->thrust)  p->anim = sPlayer_go;
     else   p->anim = sPlayer;
 
 
@@ -504,38 +391,14 @@ if (a->name=="asteroid" && b->name=="bullet")
       else i++;
     }
 
-  
-   Rectangle *lerectangle= new Rectangle("nomrectangle",22,33,0,133);
-//Rectangle lerectangle("nomrectangle",22,33,0,1);
-      
-
-  app.draw(background);
-  
-      // lerectangle.AfficherRectangle(app);
+   //////draw//////
+   app.draw(background);
+   //dessine le debugplayer si bool DebugMode_player=true
+   p->Drawhitplayer(app);
+   //dessine toutes les entitées debug si bool DebugMode_all_entity=true
    for(auto i:entities) i->draw(app);
-   lerectangle->AfficherRectangle(app);
-    
    app.display();
     }
 
-   
     return 0;
-}
-//Fonctions:
- //Fonction fermeture fenetre
-void InputHandler(Event event, RenderWindow& app)
-{
-  if (event.type == Event::KeyPressed)
-           
-          
-              //fermeture de la fenetre par echape ou par croix
-              if((Keyboard::isKeyPressed(Keyboard::Escape)))
-               
-              {
-                app.close();
-              }
-                if((event.type == Event::Closed))
-              {
-                app.close();
-              }
 }
