@@ -3,7 +3,7 @@ all:	clean compile link
 
 compile:
 	g++ -c *.cpp -I"src/include" -DSFML_STATIC 
-#	g++ -c main.cpp -I"src/include" -DSFML_STATIC
+#	g++ -c Essai.cpp -I"src/include" -DSFML_STATIC
 #	g++ -c coding/*.cpp -I"src/include" -DSFML_STATIC
 
 link:
