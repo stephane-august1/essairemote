@@ -78,4 +78,9 @@ void player::Drawhitplayer(sf::RenderWindow &app)
     debugText.setPosition(x + R + 5, y - R);
     app.draw(debugText);
    }
+ 
+ 
+}
+  void player::InputHandler(sf::Event&, sf::RenderWindow&) {
+    // Méthode virtuelle vide pour permettre l'appel via un pointeur player*
 }

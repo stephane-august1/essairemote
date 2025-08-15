@@ -8,4 +8,6 @@ public:
     player();
     void update() override;
     void Drawhitplayer(sf::RenderWindow &app);
+    virtual void InputHandler(Event &event, RenderWindow& app);
+
 };

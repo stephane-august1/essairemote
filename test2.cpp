@@ -12,7 +12,7 @@
 #include "animation.h"
 #include "entity.h"
 #include "asteroid.h"
-
+#include "clavierpad.h"
 #include "bullet.h"
 #include "player.h"
 
@@ -39,7 +39,9 @@ int tirCount = 0; // Compteur de tirs
 int hitCount = 0; // Compteur de touches
 int Countasteroid = 0; // Compteur de touches
 int Countscore=0; // Compteur de score
-
+std::vector<Entity*> entities;
+Animation sBullet;
+player* p = nullptr;
 //prototype de la fonction 
 void InputHandler(Event event, RenderWindow& app);
 bool    isCollide(Entity *a,Entity *b);
@@ -50,6 +52,8 @@ bool isCollide(Entity *a,Entity *b)
          (b->y - a->y)*(b->y - a->y)<
          (a->R + b->R)*(a->R + b->R);
 }
+
+
 
 int main()
 {
@@ -78,13 +82,14 @@ int main()
     Animation sExplosion(t3, 0,0,256,256, 48, 0.5);
     Animation sRock(t4, 0,0,64,64, 16, 0.2);
     Animation sRock_small(t6, 0,0,64,64, 16, 0.2);
-    Animation sBullet(t5, 0,0,32,64, 16, 0.8);
-    Animation sPlayer(t1, 40,0,40,40, 1, 0);
+   // Animation sBullet(t5, 0,0,32,64, 16, 0.8);
+   sBullet = Animation(t5, 0,0,32,64, 16, 0.8);
+   Animation sPlayer(t1, 40,0,40,40, 1, 0);
     Animation sPlayer_go(t1, 40,40,40,40, 1, 0);
     Animation sExplosion_ship(t7, 0,0,192,192, 64, 0.5);
 
 
-    std::list<Entity*> entities;
+   // std::list<Entity*> entities;
 
     for(int i=0;i<25;i++)
     {
@@ -93,9 +98,10 @@ int main()
       entities.push_back(a);
     }
 
-    player *p = new player();
+    //player *p = new player();
+    player *p = new Clavierpad();
     p->settings(sPlayer,W/2,+770,-90,20);
-   
+ 
     entities.push_back(p);
 
     /////main loop/////
@@ -106,9 +112,17 @@ int main()
         {
             if (event.type == Event::Closed)
                 app.close();
+ p->InputHandler(event, app);
+  
+        }
 
-            if (event.type == Event::KeyPressed)
-             if (event.key.code == Keyboard::Space)
+      
+         // Appel de la méthode pour gérer les mouvements du joueur
+// pad.update(event,app); // Mise à jour de l'état du pad
+  
+                 
+            
+           /*  if (event.key.code == Keyboard::Space)
               {
 
                 if (bulletClock.getElapsedTime().asSeconds() > bulletDelay) // Ajout du délai
@@ -120,17 +134,19 @@ int main()
                     tirCount++; // Incrémente le compteur de tirs
                 }
               
-              }
+              }*/
               
-        
 
+        // pad.InputHandler(event, app); // Appel de la fonction InputHandler
+        
+/*
     if (Keyboard::isKeyPressed(Keyboard::Right)) p->x+=2;// option avec rotation angle p->+=2;
     if (Keyboard::isKeyPressed(Keyboard::Left))  p->x-=2;// angle p->-=2;
     if (Keyboard::isKeyPressed(Keyboard::Down))  p->y+=2;// angle p->-=2;
     if (Keyboard::isKeyPressed(Keyboard::Up)) p->thrust=true;
     else p->thrust=false;
-    InputHandler(event, app);
-            }
+    InputHandler(event, app);*/
+               
 /********** gestion du rebond entre 2 asteroid*****************************/
   /* 
    for (auto itA = entities.begin(); itA != entities.end(); ++itA)
@@ -171,7 +187,7 @@ for (auto a : entities) {
                 e->settings(sExplosion, a->x, a->y);
                 e->name = "explosion";
                 toAdd.push_back(e);
-
+Countscore++;
                 for (int i = 0; i < 2; i++) {
                     if (a->R == 15) continue;
                     Entity *e = new asteroid();
@@ -269,8 +285,8 @@ for (auto e : toAdd) entities.push_back(e);
     scoreText.setFillColor(Color::White);
     std::ostringstream ss;
     ss << "Score: " << Countscore << "\n";
-    ss << "Tir Count: " << tirCount << "\n";
-    ss << "Hit Count: " << hitCount << "\n";
+    ss << "Tir Count: " << hitCount << "\n";
+    ss << "Hit Count: " << Countscore << "\n";
     ss << "Asteroid Count: " << Countasteroid << "\n";
     scoreText.setString(ss.str());
     scoreText.setPosition(10, 10);
