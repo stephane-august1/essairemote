@@ -17,6 +17,7 @@ extern int tirCount; // si tu utilises tirCount dans le debug
      dx=rand()%2-1;
      dy=rand()%2-1;
      name="asteroid";
+     
    }
 
    void asteroid::update()

@@ -28,8 +28,8 @@ const int poswindowY=60;
 bool enable_tracker=0;
 bool enable_tracker_player=0;
 float DEGTORAD = 0.017453f;
-bool DebugMode_all_entity=false;
-bool DebugMode_player=true;
+
+bool DebugMode_player=false;
 bool DebugMode_bullet=true;
 bool DebugMode_asteroid=false;
 Font debugFont;
@@ -39,6 +39,10 @@ int tirCount = 0; // Compteur de tirs
 int hitCount = 0; // Compteur de touches
 int Countasteroid = 0; // Compteur de touches
 int Countscore=0; // Compteur de score
+
+//prototype de la fonction 
+void InputHandler(Event event, RenderWindow& app);
+bool    isCollide(Entity *a,Entity *b);
 
 bool isCollide(Entity *a,Entity *b)
 {
@@ -117,15 +121,16 @@ int main()
                 }
               
               }
-              }
-        }
+              
+        
 
     if (Keyboard::isKeyPressed(Keyboard::Right)) p->x+=2;// option avec rotation angle p->+=2;
     if (Keyboard::isKeyPressed(Keyboard::Left))  p->x-=2;// angle p->-=2;
     if (Keyboard::isKeyPressed(Keyboard::Down))  p->y+=2;// angle p->-=2;
     if (Keyboard::isKeyPressed(Keyboard::Up)) p->thrust=true;
     else p->thrust=false;
-
+    InputHandler(event, app);
+            }
 /********** gestion du rebond entre 2 asteroid*****************************/
   /* 
    for (auto itA = entities.begin(); itA != entities.end(); ++itA)
@@ -153,50 +158,49 @@ int main()
 */
 /********** find de gestion du rebond asteroid*****************************/
  
+std::vector<Entity*> toAdd; // Pour stocker les nouvelles entités à ajouter après la boucle
 
-    for(auto a:entities)  
-     for(auto b:entities)
-     {
-      if (a->name=="asteroid" && b->name=="bullet")
-       if ( isCollide(a,b) )
-           {
-            a->life=false;
-            b->life=false;
+for (auto a : entities) {
+    for (auto b : entities) {
+        if (a->name == "asteroid" && b->name == "bullet" && a->life && b->life) {
+            if (isCollide(a, b)) {
+                a->life = false;
+                b->life = false;
 
-            Entity *e = new Entity();
-            e->settings(sExplosion,a->x,a->y);
-            e->name="explosion";
-            entities.push_back(e);
-            Countscore++;
+                Entity *e = new Entity();
+                e->settings(sExplosion, a->x, a->y);
+                e->name = "explosion";
+                toAdd.push_back(e);
 
-            for(int i=0;i<2;i++)
-            {
-             if (a->R==15) continue;
-             Entity *e = new asteroid();
-             e->settings(sRock_small,a->x,a->y,rand()%360,15);
-             entities.push_back(e);
-             
+                for (int i = 0; i < 2; i++) {
+                    if (a->R == 15) continue;
+                    Entity *e = new asteroid();
+                    e->settings(sRock_small, a->x, a->y, rand() % 360, 15);
+                    toAdd.push_back(e);
+                }
             }
+        }
 
-           }
+        if (a->name == "player" && b->name == "asteroid" && a->life && b->life) {
+            if (isCollide(a, b)) {
+                b->life = false;
+                Countscore += 1;
+                Entity *e = new Entity();
+                e->settings(sExplosion_ship, a->x, a->y);
+                e->name = "explosion";
+                toAdd.push_back(e);
 
-      if (a->name=="player" && b->name=="asteroid")
-       if ( isCollide(a,b) )
-           {
-            b->life=false;
-            Countscore=+1;
-            Entity *e = new Entity();
-            e->settings(sExplosion_ship,a->x,a->y);
-            e->name="explosion";
-            entities.push_back(e);
+                        p->settings(sPlayer, W / 2, +770, -90, 20);
+                p->dx = 0; p->dy = 0;
+            }
+        }
+    }
+}
 
-            p->settings(sPlayer,W/2,+770,-90,20);
-            p->dx=0; p->dy=0;
-           }
-     }
+// Ajoute les nouvelles entités après la détection de collision
+for (auto e : toAdd) entities.push_back(e);
 
-
-    if (p->thrust)  p->anim = sPlayer_go;
+    if (p->thrust) { p->anim = sPlayer_go;}
     else   p->anim = sPlayer;
 
 
@@ -227,7 +231,8 @@ int main()
    app.draw(background);
    //dessine le debugplayer si bool DebugMode_player=true
    p->Drawhitplayer(app);
-  // b->Drawhitbullet(app);
+   
+  
    // Ajoute ce bloc pour dessiner la hitbox des bullets
    if(DebugMode_bullet){
    for (auto e : entities)
@@ -252,10 +257,10 @@ int main()
    //dessine toutes les entitées debug et DebugMode_all_entity=true
    for(auto i:entities) i->draw(app);
    //compte les asteroid
-   for (auto e : entities) {
+  /* for (auto e : entities) {
     if (e->name == "asteroid" && e->life)
         Countasteroid++;
-}
+}*/
    //affiche le score:
 
     Text scoreText;
@@ -271,8 +276,30 @@ int main()
     scoreText.setPosition(10, 10);
     app.draw(scoreText);
 
+  
+   
+    
    app.display();
     }
 
+   
     return 0;
+}
+
+ //Fonction fermeture fenetre
+void InputHandler(Event event, RenderWindow& app)
+{
+  if (event.type == Event::KeyPressed)
+           
+          
+              //fermeture de la fenetre par echape ou par croix
+              if((Keyboard::isKeyPressed(Keyboard::Escape)))
+               
+              {
+                app.close();
+              }
+                if((event.type == Event::Closed))
+              {
+                app.close();
+              }
 }

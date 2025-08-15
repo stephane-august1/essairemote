@@ -9,11 +9,11 @@
 class bullet: public Entity
 {
    public:
-    std::string name;
-    bool life;
+    
+    
     bullet();   
     void  update() override;
-    void Drawhitbullet(RenderWindow &app);
+    void Drawhitbullet(sf::RenderWindow &app);
 
 };
 

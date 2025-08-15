@@ -31,7 +31,7 @@ extern float DEGTORAD;
 
      if (x>W || x<0 || y>H || y<0) life=0;
    }
-    void bullet::Drawhitbullet(RenderWindow &app){
+    void bullet::Drawhitbullet(sf::RenderWindow &app){
    if(DebugMode_bullet){
 
    //Entity::draw(app); // Dessine le sprite normalement
