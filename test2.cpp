@@ -354,7 +354,7 @@ int main()
               }
         }
 
-    if (Keyboard::isKeyPressed(Keyboard::Right)) p->x+=2;// angle p->+=2;
+    if (Keyboard::isKeyPressed(Keyboard::Right)) p->x+=2;// option avec rotation angle p->+=2;
     if (Keyboard::isKeyPressed(Keyboard::Left))  p->x-=2;// angle p->-=2;
     if (Keyboard::isKeyPressed(Keyboard::Down))  p->y+=2;// angle p->-=2;
     if (Keyboard::isKeyPressed(Keyboard::Up)) p->thrust=true;
