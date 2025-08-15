@@ -9,13 +9,19 @@
 #include "vector"
 #include <cstdlib>
 #include "sstream"
+#include "animation.h"
+#include "entity.h"
+#include "asteroid.h"
+
+#include "bullet.h"
+#include "player.h"
 
 using namespace sf;
 using namespace std;
 
 //taille de la fenetre
-const int W = 1300;
-const int H = 850;
+int W = 1300;
+int H = 850;
 //position fenetre
 const int poswindowX=43;
 const int poswindowY=60;
@@ -25,261 +31,14 @@ float DEGTORAD = 0.017453f;
 bool DebugMode_all_entity=false;
 bool DebugMode_player=true;
 bool DebugMode_bullet=true;
-
-class Animation
-{
-   public:
-   float Frame, speed;
-   Sprite sprite;
-   std::vector<IntRect> frames;
-
-   Animation(){}
-
-   Animation (Texture &t, int x, int y, int w, int h, int count, float Speed)
-   {
-     Frame = 0;
-     speed = Speed;
-
-     for (int i=0;i<count;i++)
-      frames.push_back( IntRect(x+i*w, y, w, h)  );
-
-     sprite.setTexture(t);
-     sprite.setOrigin(w/2,h/2);
-     sprite.setTextureRect(frames[0]);
-   }
-
-
-   void update()
-   {
-     Frame += speed;
-     int n = frames.size();
-     if (Frame >= n) Frame -= n;
-     if (n>0) sprite.setTextureRect( frames[int(Frame)] );
-   }
-
-   bool isEnd()
-   {
-     return Frame+speed>=frames.size();
-   }
-
-};
-
-
-class Entity
-{
-   public:
-   float x,y,dx,dy,R,angle;
-   bool life;
-   std::string name;
-   Animation anim;
-
-   Entity()
-   {
-     life=1;
-   }
-
-   void settings(Animation &a,int X,int Y,float Angle=0,int radius=1)
-   {
-     anim = a;
-     x=X; y=Y;
-     angle = Angle;
-     R = radius;
-   }
-
-   virtual void update(){};
-
-   void draw(RenderWindow &app)
-   {       
-     anim.sprite.setPosition(x,y);
-     anim.sprite.setRotation(angle+90);
-    // anim.sprite.setRotation(angle+30);
-     app.draw(anim.sprite);
-  if(DebugMode_all_entity){
-        // 🔲 Hitbox (rectangle semi-transparent)
-   RectangleShape hitbox;
-    hitbox.setSize(Vector2f(R * 4, R * 4));
-    hitbox.setOrigin(R/2, R);
-    hitbox.setPosition(x, y);
-    hitbox.setFillColor(Color(255, 0, 0, 100)); // rouge transparent
-    app.draw(hitbox);
-
-    // 📝 Texte de debug
-    Font font;
-    font.loadFromFile("./src/fonts/arial.ttf"); // Assure-toi que le fichier existe
-
-    Text debugText;
-    debugText.setFont(font);
-    debugText.setCharacterSize(12);
-    debugText.setFillColor(Color::White);
-
-    std::ostringstream ss;
-ss << "/src/fonts/arial.ttf";
-
-    ss << "Name: " << name << "\n";
-    ss << "Pos: (" << int(x) << ", " << int(y) << ")\n";
-    ss << "Speed: (" << dx << ", " << dy << ")\n";
-    ss << "Angle: " << int(angle);
-
-   debugText.setString(ss.str());
-
-    debugText.setPosition(x + R + 5, y - R);
-    app.draw(debugText);
-  }
-   }
-
-
-   virtual ~Entity(){};
-};
-
-
-class asteroid: public Entity
-{
-   public:
-   asteroid()
-   {
-     //dx=rand()%8-4;
-     //dy=rand()%8-4;
-      dx=rand()%2-1;
-     dy=rand()%2-1;
-     name="asteroid";
-   }
-
-   void update()
-   {
-     x+=dx;
-     y+=dy;
-
-     if (x>W) x=0;  if (x<0) x=W;
-     if (y>H) y=0;  if (y<0) y=H;
-   }
-
-
-};
-
-
-class bullet: public Entity
-{
-   public:
-   bullet()
-   {
-     name="bullet";
-   }
-
-   void  update()
-   {
-     dx=cos(angle*DEGTORAD)*6;
-     dy=sin(angle*DEGTORAD)*6;
-     // angle+=rand()%7-3;  /*try this*/
-     x+=dx;
-     y+=dy;
-
-     if (x>W || x<0 || y>H || y<0) life=0;
-   }
-    void Drawhitbullet(RenderWindow &app){
-   if(DebugMode_bullet){
-
-   //Entity::draw(app); // Dessine le sprite normalement
-      // 🔲 Hitbox (rectangle semi-transparent)
-   RectangleShape hitboxplayer;
-    hitboxplayer.setSize(Vector2f(R * 4, R * 4));
-    hitboxplayer.setOrigin(R/2, R);
-    hitboxplayer.setPosition(x, y);
-    hitboxplayer.setFillColor(Color(255, 0, 0, 100)); // rouge transparent
-    app.draw(hitboxplayer);
-    // 🧠 Infos de debug spécifiques au joueur
-    Font font;
-    font.loadFromFile("./src/fonts/arial.ttf");
-
-    Text debugText;
-    debugText.setFont(font);
-    debugText.setCharacterSize(24);
-    debugText.setFillColor(Color::Green);
-
-        std::ostringstream ss;
-    
-    ss << "BULLET DEBUG\n";
-    ss << "Pos: x,y:(" << int(x) << "," << int(y) << ")\n";
-    ss << "Speed: dx,dy (" << dx << ", " << dy << ")\n";
-    ss << "Angle: R: " << int(angle);
-
-    debugText.setString(ss.str());
-   // debugText.setPosition(x + R + 10, y - R - 20);
-    debugText.setPosition(x + R + 5, y - R);
-    app.draw(debugText);
-
-   }}
-
-};
-
-
-class player: public Entity
-{
-   public:
-   bool thrust;
-
-   player()
-   {
-     name="player";
-   }
-
-   void update()
-   {
-     if (thrust)
-      { dx+=cos(angle*DEGTORAD)*0.2;
-        dy+=sin(angle*DEGTORAD)*0.2; }
-     else
-      { dx*=0.99;
-        dy*=0.99; }
-
-    int maxSpeed=5;
-    float speed = sqrt(dx*dx+dy*dy);
-    if (speed>maxSpeed)
-     { dx *= maxSpeed/speed;
-       dy *= maxSpeed/speed; }
-
-    x+=dx;
-    y+=dy;
-
-    if (x>W) x=0; if (x<0) x=W;
-    if (y>H) y=0; if (y<0) y=H;
-   }
-   void Drawhitplayer(RenderWindow &app){
-   if(DebugMode_player){
-
-   Entity::draw(app); // Dessine le sprite normalement
-      // 🔲 Hitbox (rectangle semi-transparent)
-   RectangleShape hitboxplayer;
-    hitboxplayer.setSize(Vector2f(R * 4, R * 4));
-    hitboxplayer.setOrigin(R/2, R);
-    hitboxplayer.setPosition(x, y);
-    hitboxplayer.setFillColor(Color(255, 0, 0, 100)); // rouge transparent
-    app.draw(hitboxplayer);
-    // 🧠 Infos de debug spécifiques au joueur
-    Font font;
-    font.loadFromFile("./src/fonts/arial.ttf");
-
-    Text debugText;
-    debugText.setFont(font);
-    debugText.setCharacterSize(24);
-    debugText.setFillColor(Color::Green);
-
-        std::ostringstream ss;
-    
-    ss << "PLAYER DEBUG\n";
-    ss << "Pos: x,y:(" << int(x) << "," << int(y) << ")\n";
-    ss << "Speed: dx,dy (" << dx << ", " << dy << ")\n";
-    ss << "Angle: R: " << int(angle);
-
-    debugText.setString(ss.str());
-   // debugText.setPosition(x + R + 10, y - R - 20);
-    debugText.setPosition(x + R + 5, y - R);
-    app.draw(debugText);
-
-   }
-  }
-
-};
-
+bool DebugMode_asteroid=false;
+Font debugFont;
+Clock bulletClock; // Ajouté pour gérer le délai entre tirs
+float bulletDelay = 0.40f; // Délai en secondes entre deux tirs
+int tirCount = 0; // Compteur de tirs
+int hitCount = 0; // Compteur de touches
+int Countasteroid = 0; // Compteur de touches
+int Countscore=0; // Compteur de score
 
 bool isCollide(Entity *a,Entity *b)
 {
@@ -288,14 +47,16 @@ bool isCollide(Entity *a,Entity *b)
          (a->R + b->R)*(a->R + b->R);
 }
 
-
 int main()
 {
     srand(time(0));
 
     RenderWindow app(VideoMode(W, H), "Asteroids!");
     app.setFramerateLimit(60);
-
+ if (!debugFont.loadFromFile("./src/fonts/arial.ttf")) {
+        cout<< "Erreur chargement police debug !" << endl;
+        
+    }
     Texture t1,t2,t3,t4,t5,t6,t7;
     t1.loadFromFile("./src/images/spaceship.png");
     t2.loadFromFile("./src/images/background.jpg");
@@ -321,10 +82,10 @@ int main()
 
     std::list<Entity*> entities;
 
-    for(int i=0;i<15;i++)
+    for(int i=0;i<25;i++)
     {
       asteroid *a = new asteroid();
-      a->settings(sRock, rand()%W, rand()%H, rand()%360, 25);
+      a->settings(sRock, rand()%W, rand()%(H/2), rand()%360, 25);
       entities.push_back(a);
     }
 
@@ -345,12 +106,17 @@ int main()
             if (event.type == Event::KeyPressed)
              if (event.key.code == Keyboard::Space)
               {
-                bullet *b = new bullet();
-                b->settings(sBullet,p->x,p->y,p->angle,10);
-                
-                entities.push_back(b);
-                b->Drawhitbullet(app);
-                
+
+                if (bulletClock.getElapsedTime().asSeconds() > bulletDelay) // Ajout du délai
+                {
+                    bullet *b = new bullet();
+                    b->settings(sBullet,p->x,p->y,p->angle,10);
+                    entities.push_back(b);
+                    bulletClock.restart();
+                    tirCount++; // Incrémente le compteur de tirs
+                }
+              
+              }
               }
         }
 
@@ -361,7 +127,7 @@ int main()
     else p->thrust=false;
 
 /********** gestion du rebond entre 2 asteroid*****************************/
-   
+  /* 
    for (auto itA = entities.begin(); itA != entities.end(); ++itA)
 {
     auto itB = itA;
@@ -384,16 +150,11 @@ int main()
         }
     }
 }
-
+*/
 /********** find de gestion du rebond asteroid*****************************/
+ 
 
-
-    
-
-    for(auto a:entities)
-   
-
-
+    for(auto a:entities)  
      for(auto b:entities)
      {
       if (a->name=="asteroid" && b->name=="bullet")
@@ -406,7 +167,7 @@ int main()
             e->settings(sExplosion,a->x,a->y);
             e->name="explosion";
             entities.push_back(e);
-
+            Countscore++;
 
             for(int i=0;i<2;i++)
             {
@@ -414,6 +175,7 @@ int main()
              Entity *e = new asteroid();
              e->settings(sRock_small,a->x,a->y,rand()%360,15);
              entities.push_back(e);
+             
             }
 
            }
@@ -422,7 +184,7 @@ int main()
        if ( isCollide(a,b) )
            {
             b->life=false;
-
+            Countscore=+1;
             Entity *e = new Entity();
             e->settings(sExplosion_ship,a->x,a->y);
             e->name="explosion";
@@ -445,7 +207,7 @@ int main()
     if (rand()%150==0)
      {
        asteroid *a = new asteroid();
-       a->settings(sRock, 0,rand()%H, rand()%360, 25);
+       a->settings(sRock, 0,rand()%(H/2), rand()%360, 25);
        entities.push_back(a);
        
      }
@@ -466,9 +228,49 @@ int main()
    //dessine le debugplayer si bool DebugMode_player=true
    p->Drawhitplayer(app);
   // b->Drawhitbullet(app);
-   //dessine toutes les entitées debug si bool DebugMode_all_entity=true
+   // Ajoute ce bloc pour dessiner la hitbox des bullets
+   if(DebugMode_bullet){
+   for (auto e : entities)
+   {
+       if (e->name == "bullet" && e->life)
+       {
+           bullet* b = dynamic_cast<bullet*>(e);
+           if (b) b->Drawhitbullet(app);
+       }
+   }}
+    // Ajoute ce bloc pour dessiner la hitbox des asteroids
+  
+    if(DebugMode_asteroid){
+   for (auto e : entities)
+   {
+       if (e->name == "asteroid")
+       {
+           asteroid* b = dynamic_cast<asteroid*>(e);
+           if (b) b->Drawhasteroid(app);
+       }
+   }}
+   //dessine toutes les entitées debug et DebugMode_all_entity=true
    for(auto i:entities) i->draw(app);
-   
+   //compte les asteroid
+   for (auto e : entities) {
+    if (e->name == "asteroid" && e->life)
+        Countasteroid++;
+}
+   //affiche le score:
+
+    Text scoreText;
+    scoreText.setFont(debugFont);
+    scoreText.setCharacterSize(24);
+    scoreText.setFillColor(Color::White);
+    std::ostringstream ss;
+    ss << "Score: " << Countscore << "\n";
+    ss << "Tir Count: " << tirCount << "\n";
+    ss << "Hit Count: " << hitCount << "\n";
+    ss << "Asteroid Count: " << Countasteroid << "\n";
+    scoreText.setString(ss.str());
+    scoreText.setPosition(10, 10);
+    app.draw(scoreText);
+
    app.display();
     }
 

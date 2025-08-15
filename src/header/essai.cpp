@@ -1,299 +1,471 @@
+#include <SFML/Graphics.hpp>
 #include <time.h>
-#include <list>
 #include "math.h"
+#include <list>
+#include <SFML/System.hpp>
 #include <iostream>
-#include <vector>
 #include <cstdlib>
 #include <string>
-#include <cstring>
-#include <array>
-#include <sstream>
-#include <array>
+#include "vector"
+#include <cstdlib>
+#include "sstream"
 
-
+using namespace sf;
 using namespace std;
 
+//taille de la fenetre
+const int W = 1300;
+const int H = 850;
+//position fenetre
+const int poswindowX=43;
+const int poswindowY=60;
+bool enable_tracker=0;
+bool enable_tracker_player=0;
+float DEGTORAD = 0.017453f;
 
-class Point{
-public:
-     string name,nom;
-    int positionx,positiony;
-    int newx,newy;
-    int posx,posy;
-    //accesseurs:
-    int getPositionX(){return positionx;}
-    int setPositionX(int newx){positionx=newx;}
-    string getName(){return name;}
-    
-    int getPositionY(){return positiony;}
-    int setPositionY(int positiony){positiony=positiony;}
-    string  setName(string nom){name=nom;}
+//Variable globale
+Font font;
+string police = "./src/font/arial.ttf";
+Vector2i mousePos; 
 
+//prototype de la fonction InputHandler
 
-Point( string name,int positionx,int positiony):name(name),posx(positionx),posy(positiony){
-    this->positionx=positionx;
-    this->positiony=positiony;
-this->name=name;}
-Point() : name("Unknown"), posx(0), posy(0) {} 
-void Afficherpoint(){
-    
-cout <<"nom : " << name <<" posx,y : "<< positionx <<","<< positiony << "\n ";
-}
+void InputHandler(Event event, RenderWindow &window);
+
+class Animation
+{
+   public:
+   float Frame, speed;
+   Sprite sprite;
+   std::vector<IntRect> frames;
+
+   Animation(){}
+
+   Animation (Texture &t, int x, int y, int w, int h, int count, float Speed)
+   {
+     Frame = 0;
+     speed = Speed;
+
+     for (int i=0;i<count;i++)
+        frames.push_back( IntRect(x+i*w, y, w, h)  );
+        sprite.setTexture(t);
+        sprite.setOrigin(w/2,h/2);
+        sprite.setTextureRect(frames[0]);
+   }
+
+   void update()
+   {
+     Frame += speed;
+     int n = frames.size();
+     if (Frame >= n) Frame -= n;
+     if (n>0) sprite.setTextureRect( frames[int(Frame)] );
+   }
+
+   bool isEnd()
+   {
+     return Frame+speed>=frames.size();
+   }
+
 };
 
-int main()
+class Entity 
 {
+   public:
+   float x,y,dx,dy,R,angle;
+   bool life;
+   std::string name;
+   Animation anim;
 
-    //  cout << "entrer le nombre d'objet point voulu" << endl;
-    int nbrObjet=0;
-  // cin >> nbrObjet ;
-  const int nbrcase=3;
-  // cout << "entrer le nombre de case par objet voulu" << endl;
- //  cin >> nbrcase;
+   Entity()
+   {
+     life=1;
+   }
 
-  Point *p = new Point("pointp",1,4);
-  Point *p1 = new Point("pointp1",13,4);
+   void settings(Animation &a,int X,int Y,float Angle=0,int radius=1)
+   {
+     anim = a;
+     x=X; y=Y;
+     angle = Angle;
+     R = radius;
+   }
 
-//p->Afficherpoint();
+   virtual void update(){};
 
-   /* vector<Point *> v;
-for(auto e: v){
-   cout << e->name << endl;
-   e->Afficherpoint();}*/
-   Point *p3 = new Point("point3t",4,6);
-   p->Afficherpoint();
-     
-      // Basic 10-element integer array.
-   //vec[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+   void draw(RenderWindow &window)
+   {       
+     anim.sprite.setPosition(x,y);
+     anim.sprite.setRotation(angle+90);
+    // anim.sprite.setRotation(angle+30);
+     window.draw(anim.sprite);
+  
+        // 🔲 Hitbox (rectangle semi-transparent)
+  /* RectangleShape hitbox;
+    hitbox.setSize(Vector2f(R * 2, R * 2));
+    hitbox.setOrigin(R, R);
+    hitbox.setPosition(x, y);
+    hitbox.setFillColor(Color(255, 0, 0, 100)); // rouge transparent
+    window.draw(hitbox);
 
-constexpr size_t size = 4;
+    // 📝 Texte de debug
+    Font font;
+    font.loadFromFile("/src/fonts/arial.ttf"); // Assure-toi que le fichier existe
+
+    Text debugText;
+    debugText.setFont(font);
+    debugText.setCharacterSize(12);
+    debugText.setFillColor(Color::White);
+
+    std::ostringstream ss;
+    ss << "Name: " << name << "\n";
+    ss << "Pos: (" << int(x) << ", " << int(y) << ")\n";
+    ss << "Speed: (" << dx << ", " << dy << ")\n";
+    ss << "Angle: " << int(angle);
+std::ostringstream ss;
+ss << "/src/fonts/arial.ttf";
+debugText.setString(ss.str());
    
-    vector<string> v={"traits_p","ddede","dede"};;
-//Auto[size];
-auto d = int{10};
-string lenom =p->name;
-int positiondex =p->positionx;
-    // Assign a new value to the first element
-   /* numbers[0]->name =p[0].name;
-     numbers[1]->positionx= p[1].positionx;
-      numbers[2]->positiony= p[2].positiony;
-      cout << numbers[0] << "\n" <<endl;
-      cout << numbers[1] <<"\n" << endl;
-      cout << "la"<<numbers[2] << "\n" <<endl;*/
-      // numbers[0]=(Point *) p;
-     //  numbers[1]= (Point *) p3;
-      // numbers[2]= (Point *) &p;
-       //numbers[1]=p->name;
-     // numbers[3].push_back(Point p4 = new Point);
-    // monvector.push_back(new Point ("fff",4,8));
-    // monvector.push_back(p);
-    // monvector.push_back(p3);
-      // Declare an array of doubles to be allocated on the stack
-    string numbers[] {};
-   // string  val=p;
-     string valeur=p->name;
-      string valeur2 =(p3->name);
-     // (*numbers).push_back(&p);
-      std::list<Point*> points;
-     points.push_back(p);
-    // numbers[0]->name=p.name;
-     //  cout <<"adresse denumbers[0] : " << numbers[0]  <<endl;
-     //  cout <<"adresse p sur numbers[1] : " << numbers[1] <<endl;
-     //cout <<"adresse p sur numbers[2] : " << points << "\n" <<endl;
-      // cout << "adresse monvector = "<<monvector[2] <<endl;
-     //   cout << "adresse p = "<<&p  <<endl;
-     //  cout << "vect = "<<vect[1] << "\n" <<endl;
-    
-   /*    cout << "number[1]"<<numbers[1] <<"\n" << endl;
-       for(auto& y: v ) { // Access by value using a copy declared as a specific type.
-           int i=0;
-           i=i+1;            // Not preferred.
-        cout << "i= "<< v << "numbers: " << y << " ";
-    }
-    cout << endl;*/
-    int i=0;
-    for(auto p: points){
+debugText.setString(ss.str());
+    debugText.setPosition(x + R + 5, y - R);
+    window.draw(debugText);*/
+
+   }
+
+   virtual ~Entity(){};
+};
+
+
+class asteroid: public Entity
+{
+   public:
+   asteroid()
+   {
+     dx=rand()%8-4;
+     dy=rand()%8-4;
+     name="asteroid";
+   }
+
+   void update()
+   {
+       
+     x+=dx/2;
+     y+=dy/2;
+
+     if (x>W) x=0;  if (x<0) x=W;
+     if (y>H) y=0;  if (y<0) y=H;
+   }
+
+};
+
+
+class bullet: public Entity
+{
+   public:
+   bullet()
+   {
+     name="bullet";
+     
+   }
+
+   void  update()
+   {
+   
+     dx=cos(angle*DEGTORAD)*13;
+     dy=sin(angle*DEGTORAD)*13;
+    //  angle+=rand()%7-3;  
+     // vistesse deplacement du tir
+     x+=dx/2;
+     y+=dy/2;
+   
+     if (x>W || x<0 || y>H || y<0) life=0;
+   }
+
+};
+
+
+class player: public Entity
+{
+   public:
+   bool thrust;
+   bool spaceshipleft=false;
+
+    string getplayername(){return name;}
+   player()
+   {
+     name="player";
+   }
+
+   void update()
+   {
+     if (thrust)
+      { dx+=cos(angle*DEGTORAD)*0.8;
+        dy+=sin(angle*DEGTORAD)*0.8; }if (spaceshipleft)
+
+        {
+          dx+=0.99;
+          dy=0;
+        }
         
-            p->Afficherpoint();
-              p1->Afficherpoint();
-                p3->Afficherpoint();
-    }    
-    std::cout << endl;
-//moddifi p name
-p->name="point1";p1->name="point2";p3->name="point3";
-        for(auto p: points){
-         p->Afficherpoint();
-              p1->Afficherpoint();
-                p3->Afficherpoint();
-    }    
+
+     else
+      { dx*=0.99;
+        dy*=0.99; }
+
+    int maxSpeed=5;
+    float speed = sqrt(dx*dx+dy*dy);
+    if (speed>maxSpeed)
+     { dx *= maxSpeed/speed;
+       dy *= maxSpeed/speed; }
+
+    x+=dx;
+    y+=dy;
+
+    if (x>W) x=0; if (x<0) x=W;
+    if (y>H) y=0; if (y<0) y=H;
+   }
+  /*  void draw(RenderWindow &window)
+{
+    Entity::draw(window); // Dessine le sprite normalement
+
+    // 🧠 Infos de debug spécifiques au joueur
+    Font font;
+    font.loadFromFile("arial.ttf");
+
+    Text debugText;
+    debugText.setFont(font);
+    debugText.setCharacterSize(14);
+    debugText.setFillColor(Color::Cyan);
+
+    std::ostringstream ss;
+    ss << "PLAYER DEBUG\n";
+    ss << "Pos: (" << int(x) << ", " << int(y) << ")\n";
+    ss << "Speed: (" << dx << ", " << dy << ")\n";
+    ss << "Angle: " << int(angle);
+
+    debugText.setString(ss.str());
+    debugText.setPosition(x + R + 10, y - R - 20);
+    window.draw(debugText);
+}*/
+
+
+};
+
+bool isCollide(Entity *a,Entity *b)
+{
+  return (b->x - a->x)*(b->x - a->x)+
+         (b->y - a->y)*(b->y - a->y)<
+         (a->R + b->R)*(a->R + b->R);
+}
+int main() {
+    srand(time(0));
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Tracker Example");
+     //position de la fenetre;
+    window.setPosition(sf::Vector2i(poswindowX,poswindowY));
+    
+    window.setFramerateLimit(60);
+      sf::Font font;
+    if (!font.loadFromFile("./src/fonts/arial.ttf")) {
+        return -1; // Assure-toi d'avoir une police dans ton dossier
+    }
+
+    sf::Text text;
+    text.setFont(font);
+    text.setCharacterSize(20);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(10.f, 10.f);
+    
+      Texture t1,t2,t3,t4,t5,t6,t7;
+    t1.loadFromFile("./src/images/spaceship.png");
+    t2.loadFromFile("./src/images/background.jpg");
+    t3.loadFromFile("./src/images/explosions/type_C.png");
+    t4.loadFromFile("./src/images/rock.png");
+    t5.loadFromFile("./src/images/fire_blue.png");
+    t6.loadFromFile("./src/images/rock_small.png");
+    t7.loadFromFile("./src/images/explosions/type_B.png");
+    
+ t1.setSmooth(true);
+    t2.setSmooth(true);
+
+    Sprite background(t2);
+  
+   
+       Animation sExplosion(t3, 0,0,256,256, 48, 0.5);
+    Animation sRock(t4, 0,0,64,64, 16, 0.2);
+    Animation sRock_small(t6, 0,0,64,64, 16, 0.2);
+    Animation sBullet(t5, 0,0,32,64, 16, 0.8);
+    Animation sPlayer(t1, 40,0,40,40, 1, 0);
+    Animation sPlayer_go(t1, 40,40,40,40, 1, 0);
+    Animation sPlayer_left(t1, 0,0,40,40, 1, 0);
+    Animation sExplosion_ship(t7, 0,0,192,192,68, 0.5);
+   //Animation sExplosion_ship(t7, 0,0,800,500,48, 0);
+
+   
+  
+
+
+
+   float speed = 10.f;
+    sf::Clock clk;
+        list<Entity*> entities;
+       // std::liststd::unique_ptr<Entity entities;
+//nbr asteroide grand
+    for(int i=0;i<3;i++)
+    {
+      asteroid *a = new asteroid();
+      a->settings(sRock, rand()%W, rand()%H, rand()%360, 25);
+      entities.push_back(a);
+    }
+
+     player *p = new player();
+    p->settings(sPlayer,200,200,0,20);
+   
+    entities.push_back(p); 
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) window.close();
+        
+
+       
+
+    //Gestion des evenements fonction inputhandler
+            if (event.type == Event::KeyPressed)
+            //Gestion du tir
+             if (event.key.code == Keyboard::Space)
+              {
+                bullet *b = new bullet();
+                b->settings(sBullet,p->x,p->y,p->angle,10);
+                entities.push_back(b);
+               // ballSound.play();
+              }
+          //Gestion des evenements fonction inputhandler
+              //Gestion du deplacement vaisseau
+          
+  
+    
+              if(event.key.code == Keyboard::Right) (p->angle+=3) ;
+              if(event.key.code == Keyboard::Left)(p->angle-=3) ;
+              
+              //version avec sprite vers la gauche.
+              //if((event.key.code == Keyboard::Left)&&(p->spaceshipleft=true))p->angle-=3;
+              //else p->spaceshipleft=false;
+              if(event.key.code == Keyboard::Up) (p->thrust=true);
+              else p->thrust=false;
+              //fermeture de la fenetre par echape ou par croix
+              //appel de la fonction InputHandler
+              InputHandler(event,window); 
+            }   
+    for(auto a:entities)
+  
+     for(auto b:entities)
+     {
+     
+if (a->name=="asteroid" && b->name=="bullet")
+       if ( isCollide(a,b) )
+           {
+           
+            a->life=false;
+            b->life=false;
+
+            Entity *e = new Entity();
+                       
+            e->settings(sExplosion,a->x,a->y);
+            e->name="explosion";
+            entities.push_back(e);
+              
+            //nombre de sération grand rock en small
+            for(int i=0;i<2;i++)
+            {
+             if (a->R==15) continue;
+             Entity *e = new asteroid();
+             e->settings(sRock_small,a->x,a->y,rand()%360,15);
+              
+             entities.push_back(e);
+            }
+
+           }
+      if (a->name=="player" && b->name=="asteroid")
+       if ( isCollide(a,b) )
+           {
+          //  explosionSound.play();
+            b->life=false;
+ 
+            Entity *e = new Entity();
+            e->settings(sExplosion_ship,a->x,a->y);
+           // e->settings(sExplosion,a->x,a->y);
+            e->name="explosion";
+            entities.push_back(e);
             
 
-    
-    std::cout << endl;
-// p->Afficherpoint();
-   // pointArray[nbrPoint+1]->name = p[nbrPoint+1].name;
-    // Range-based for loop to iterate through the array.
- /*   for( Array y : vect ) { // Access by value using a copy declared as a specific type.
-                       // Not preferred.
-        cout << y << " ";
-    }
-    cout << endl;
-
-    // The auto keyword causes type inference to be used. Preferred.
-
-    for( auto y : x ) { // Copy of 'x', almost always undesirable
-        cout << y << " ";
-    }
-    cout << endl;
-
-    for( auto &y : x ) { // Type inference by reference.
-        // Observes and/or modifies in-place. Preferred when modify is needed.
-        cout << y << " ";
-    }
-    cout << endl;*/
-
-   // x[]=;
-   
+            p->settings(sPlayer,W/2,-H,0,20);
+           // p->settings(sPlayer,W/2,-750,0,20);
+            p->dx=0; p->dy=0;
  
-   
-// int tab2 []={p,p2,p3};
-/*   string tab[nbrcase] ={"ddd","ccc"};
-   string*pt1;
-   pt1 = &tab[0];
-   int*pt2;
+           }
+     }
 
 
+    if (p->thrust) { p->anim = sPlayer_go;}
+    else if ((p->thrust)&&(p->spaceshipleft)) { p->anim = sPlayer_left;}
+    else   p->anim = sPlayer;
 
 
-//creation des objet Points:
+    for(auto e:entities)
+     if (e->name=="explosion")
+      if (e->anim.isEnd()) e->life=0;
 
-   Point *p = new Point[nbrPoint];
-   for(int i=0;i<=nbrPoint+1;i++){
-cout << "entrer" << nbrPoint+1<< "le premier point de forme text,nbr,nbr" << endl;
-cin >> p[i].name>> p[i].posx >> p[i].posy;
-cout << "\n"; 
+    if (rand()%150==0)
+     {
+       asteroid *a = new asteroid();
+       a->settings(sRock, 0,rand()%H, rand()%360, 25);
+       entities.push_back(a);
+     }
 
-pointArray[nbrPoint+1]->name = p[nbrPoint+1].name;
- pointArray[nbrPoint+1]->posx = p[nbrPoint+1].posx;
-  pointArray[nbrPoint+1]->posy = p[nbrPoint+1].posy;
- // return Point pointArray[];
-   }
-  for(int i=0;i<2;i++){
-         nbrObjet+1;
-        // cout << "nbrObjet "<<"i="<< nbrcase << " - "<< + nbrObjet << "\n" << endl;
-          for(int j=0;j<=2;j++){
-                nbrcase+1;
-     cout << "nbrObjet "<<"i= " << i<<"-"<< "j= " << j << " - "<< nbrObjet << "\n" << endl;
-              //  cout << "nbrObjet "<< nbrObjet <<"case: " << nbrcase << "\n" << endl;
+    for(auto i=entities.begin();i!=entities.end();)
+    {
+      Entity *e = *i;
+
+      e->update();
+      e->anim.update();
+
+      if (e->life==false) {i=entities.erase(i); delete e;}
+      else i++;
     }
-    
+         // Obtenir la position de la souris
+        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
+        // Utiliser ostringstream pour formater le texte
+        std::ostringstream ss;
+        ss << "Souris - X: " << mousePos.x << " Y: " << mousePos.y;
+        text.setString(ss.str());
+ 
+window.clear(sf::Color(30,30,30));
+window.draw(background);
+window.draw(text);
+ for(auto i:entities) i->draw(window);
+ 
+        window.display();
     }
-   
-   // Array de pointers qui pointe sur class 'Point' objects
-   
-   
-   //Point *p = new Point{};
-  for(int i=0;i<nbrObjet;i++){
-    nbrObjet+1;
-              Point *p= new Point{};
-        
-         cout << "entre le nom avec guillemets puis 2 chiffres x et y " << endl;
-        cin >> p[i].name>> p[i].posx >> p[i].posy;
-     for(int j=0;j<=nbrcase;j++){
-      
-        nbrcase+1;
-       
-//Point p[i][j]= new Point(p[i][j].name,p[i][j].posx ,p[i][j].posy);
+
+    return 0;
+} 
 
 
-       // cin >> p[i].name>> p[i].posx >> p[i].posy;
-int positionduX,positionduY;
-string lenom;
-int u=nbrObjet;
-      Point* PointArray1[i][j];
-PointArray1[i][j] = new Point;
-
-cout << "PointArray1[i] " << PointArray1[i][j]<< "i=" << i << endl;
-cout << "PointArray1[i] " << PointArray1[1][j]<< "i=rang1: " << i << endl;
-cout << "p[j].name" << p[j].name << endl;
-cout << "p[i].name" << p[i].name << endl;
-//cin >>name = p[i][j].name >> p[i][j].posx >> p[i][j].posy; 
-    PointArray1[i][0]->name= p[j].name;
-    PointArray1[i][1]->posx= p[j].positionx;
-    PointArray1[i][2]->posy= p[j].positiony;
-
-  cout << PointArray1[i][0] <<"\n"<< endl;
-  cout << PointArray1[i][1] <<"\n"<< endl;
-  cout << PointArray1[i][2] <<"\n"<< endl;
-  //return Point;
-// return PointArray1[i][j]->Afficherpoint();
-
-}
-
-}
-   vector<Point *> v;
-for(auto e : v){
-   e->Afficherpoint();}
-//cout << PointArray1[0][2] << endl;
-    PointArray1[1]->name = "pointeur5";
-    PointArray1[2]->posx = 33;
-    PointArray1[3]->posy = 55;
-
-
-pointArray2[1] = new Point;
-  pointArray2[0]->name = "pointeur6";
- pointArray2[1]->posx = 33;
-  pointArray2[2]->posy = 88;
-
-
-pointArray3[2] = new Point;
-  pointArray3[0]->name = "pointeur7";
- pointArray3[1]->posx =99;
-  pointArray3[2]->posy = 47;
-
-  // PointArray1[1][1]->Afficherpoint();
- for(int i=0;i<=nbrObjet;i++){
-     for(int j=0;j<=nbrcase;j++){
-        cout << "premier indice tab" << "["[i] + "]" << "["[j] +"]" << endl;
-//PointArray1[i][j]->Afficherpoint();
-
- }}
-
-
-
-
-
-// Display the models of each car using the show() method
-
-
-
-
-
-
-// Display the models of each car using the show() method
-
-
-
-  for(int i=0;i<=nbrPoint;i++)
+//Fonctions:
+ //Fonction fermeture fenetre
+void InputHandler(Event event, RenderWindow& window)
 {
-//i+1;
-cout << "resultat"<< " i: "<< i << endl;
-// p[i]->Afficherpoint() ; 
- }
- 
-cout << "adresse de &p " << &p << " fin "<< endl;
-cout << "adresse de &tab " << &tab << " fin "<< endl;
-cout << "adresse de pt1 " << pt1 << " fin "<< endl;
-cout << "adresse de *pt1 " << *pt1 << " fin "<< endl;
-cout << "ajoute au pt1 " << *pt1+"eeee" << " fin "<< endl;
-  // cout << "x est var: " << *p << " fin "<< endl;
-   cout << "x est var: " << *(pt1+1) << " fin "<< endl; 
-   cout << "x est var: " << *(pt1+1) << " fin "<< endl;  
-   cout << "x est var: " << *pt2 << " fin "<< endl;
-   
-   
-
-
-  // p[nbrdepoint]->Afficherpoint(); }*/
-return 0;
+  if (event.type == Event::KeyPressed)
+           
+          
+              //fermeture de la fenetre par echape ou par croix
+              if((Keyboard::isKeyPressed(Keyboard::Escape)))
+               
+              {
+                window.close();
+              }
+                if((event.type == Event::Closed))
+              {
+                window.close();
+              }
 }
