@@ -15,7 +15,7 @@
 #include "clavierpad.h"
 #include "bullet.h"
 #include "player.h"
-
+#include "debug.h"
 using namespace sf;
 using namespace std;
 
@@ -29,7 +29,7 @@ bool enable_tracker=0;
 bool enable_tracker_player=0;
 float DEGTORAD = 0.017453f;
 
-bool DebugMode_player=false;
+bool DebugMode_player=true;
 bool DebugMode_bullet=true;
 bool DebugMode_asteroid=false;
 Font debugFont;
@@ -43,7 +43,7 @@ std::vector<Entity*> entities;
 Animation sBullet;
 player* p = nullptr;
 //prototype de la fonction 
-void InputHandler(Event event, RenderWindow& app);
+//void InputHandler(Event event, RenderWindow& app);
 bool    isCollide(Entity *a,Entity *b);
 
 bool isCollide(Entity *a,Entity *b)
@@ -85,7 +85,8 @@ int main()
    // Animation sBullet(t5, 0,0,32,64, 16, 0.8);
    sBullet = Animation(t5, 0,0,32,64, 16, 0.8);
    Animation sPlayer(t1, 40,0,40,40, 1, 0);
-    Animation sPlayer_go(t1, 40,40,40,40, 1, 0);
+  
+  Animation sPlayer_go(t1, 40,40,40,40, 1, 0);
     Animation sExplosion_ship(t7, 0,0,192,192, 64, 0.5);
 
 
@@ -116,37 +117,10 @@ int main()
   
         }
 
-      
-         // Appel de la méthode pour gérer les mouvements du joueur
-// pad.update(event,app); // Mise à jour de l'état du pad
-  
-                 
-            
-           /*  if (event.key.code == Keyboard::Space)
-              {
-
-                if (bulletClock.getElapsedTime().asSeconds() > bulletDelay) // Ajout du délai
-                {
-                    bullet *b = new bullet();
-                    b->settings(sBullet,p->x,p->y,p->angle,10);
-                    entities.push_back(b);
-                    bulletClock.restart();
-                    tirCount++; // Incrémente le compteur de tirs
-                }
-              
-              }*/
+    
               
 
-        // pad.InputHandler(event, app); // Appel de la fonction InputHandler
-        
-/*
-    if (Keyboard::isKeyPressed(Keyboard::Right)) p->x+=2;// option avec rotation angle p->+=2;
-    if (Keyboard::isKeyPressed(Keyboard::Left))  p->x-=2;// angle p->-=2;
-    if (Keyboard::isKeyPressed(Keyboard::Down))  p->y+=2;// angle p->-=2;
-    if (Keyboard::isKeyPressed(Keyboard::Up)) p->thrust=true;
-    else p->thrust=false;
-    InputHandler(event, app);*/
-               
+             
 /********** gestion du rebond entre 2 asteroid*****************************/
   /* 
    for (auto itA = entities.begin(); itA != entities.end(); ++itA)
@@ -246,11 +220,12 @@ for (auto e : toAdd) entities.push_back(e);
    //////draw//////
    app.draw(background);
    //dessine le debugplayer si bool DebugMode_player=true
-   p->Drawhitplayer(app);
-   
+   //p->Drawhitplayer(app);
+   if (DebugMode_player)
+    Debug::DrawPlayer(p, app);
   
    // Ajoute ce bloc pour dessiner la hitbox des bullets
-   if(DebugMode_bullet){
+/*   if(DebugMode_bullet){
    for (auto e : entities)
    {
        if (e->name == "bullet" && e->life)
@@ -258,10 +233,15 @@ for (auto e : toAdd) entities.push_back(e);
            bullet* b = dynamic_cast<bullet*>(e);
            if (b) b->Drawhitbullet(app);
        }
-   }}
+   }}*/
+  if (DebugMode_bullet)
+    Debug::DrawBullets(entities, app);
+
     // Ajoute ce bloc pour dessiner la hitbox des asteroids
   
-    if(DebugMode_asteroid){
+if (DebugMode_asteroid)
+    Debug::DrawAsteroids(entities, app);
+/*    if(DebugMode_asteroid){
    for (auto e : entities)
    {
        if (e->name == "asteroid")
@@ -269,7 +249,7 @@ for (auto e : toAdd) entities.push_back(e);
            asteroid* b = dynamic_cast<asteroid*>(e);
            if (b) b->Drawhasteroid(app);
        }
-   }}
+   }}*/
    //dessine toutes les entitées debug et DebugMode_all_entity=true
    for(auto i:entities) i->draw(app);
    //compte les asteroid
