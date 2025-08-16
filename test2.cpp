@@ -16,6 +16,7 @@
 #include "bullet.h"
 #include "player.h"
 #include "debug.h"
+#include "collision.h"
 using namespace sf;
 using namespace std;
 
@@ -42,18 +43,6 @@ int Countscore=0; // Compteur de score
 std::vector<Entity*> entities;
 Animation sBullet;
 player* p = nullptr;
-//prototype de la fonction 
-//void InputHandler(Event event, RenderWindow& app);
-bool    isCollide(Entity *a,Entity *b);
-
-bool isCollide(Entity *a,Entity *b)
-{
-  return (b->x - a->x)*(b->x - a->x)+
-         (b->y - a->y)*(b->y - a->y)<
-         (a->R + b->R)*(a->R + b->R);
-}
-
-
 
 int main()
 {
@@ -144,48 +133,12 @@ int main()
             }
         }
     }
-}
-*/
+}*/
+
 /********** find de gestion du rebond asteroid*****************************/
  
 std::vector<Entity*> toAdd; // Pour stocker les nouvelles entités à ajouter après la boucle
 
-for (auto a : entities) {
-    for (auto b : entities) {
-        if (a->name == "asteroid" && b->name == "bullet" && a->life && b->life) {
-            if (isCollide(a, b)) {
-                a->life = false;
-                b->life = false;
-
-                Entity *e = new Entity();
-                e->settings(sExplosion, a->x, a->y);
-                e->name = "explosion";
-                toAdd.push_back(e);
-Countscore++;
-                for (int i = 0; i < 2; i++) {
-                    if (a->R == 15) continue;
-                    Entity *e = new asteroid();
-                    e->settings(sRock_small, a->x, a->y, rand() % 360, 15);
-                    toAdd.push_back(e);
-                }
-            }
-        }
-
-        if (a->name == "player" && b->name == "asteroid" && a->life && b->life) {
-            if (isCollide(a, b)) {
-                b->life = false;
-                Countscore += 1;
-                Entity *e = new Entity();
-                e->settings(sExplosion_ship, a->x, a->y);
-                e->name = "explosion";
-                toAdd.push_back(e);
-
-                        p->settings(sPlayer, W / 2, +770, -90, 20);
-                p->dx = 0; p->dy = 0;
-            }
-        }
-    }
-}
 
 // Ajoute les nouvelles entités après la détection de collision
 for (auto e : toAdd) entities.push_back(e);
@@ -219,44 +172,34 @@ for (auto e : toAdd) entities.push_back(e);
 
    //////draw//////
    app.draw(background);
-   //dessine le debugplayer si bool DebugMode_player=true
-   //p->Drawhitplayer(app);
-   if (DebugMode_player)
+  //ajout des debugs box
+    if (DebugMode_player)
     Debug::DrawPlayer(p, app);
-  
-   // Ajoute ce bloc pour dessiner la hitbox des bullets
-/*   if(DebugMode_bullet){
-   for (auto e : entities)
-   {
-       if (e->name == "bullet" && e->life)
-       {
-           bullet* b = dynamic_cast<bullet*>(e);
-           if (b) b->Drawhitbullet(app);
-       }
-   }}*/
-  if (DebugMode_bullet)
-    Debug::DrawBullets(entities, app);
-
-    // Ajoute ce bloc pour dessiner la hitbox des asteroids
-  
-if (DebugMode_asteroid)
+    if (DebugMode_bullet)
+    Debug::DrawBullets(entities, app);  
+    if (DebugMode_asteroid)
     Debug::DrawAsteroids(entities, app);
-/*    if(DebugMode_asteroid){
-   for (auto e : entities)
-   {
-       if (e->name == "asteroid")
-       {
-           asteroid* b = dynamic_cast<asteroid*>(e);
-           if (b) b->Drawhasteroid(app);
-       }
-   }}*/
+
+  // Gestion des collisions
+  CollisionManager::handleCollisions(
+    entities,
+    p,
+    sExplosion,
+    sExplosion_ship,
+    sRock_small,
+    Countscore
+);
+//ajout de la gestion du rebond class collision
+CollisionManager::handleRebond(
+        entities,
+        p,        
+        sRock,
+         sRock_small,
+        Countscore
+);
    //dessine toutes les entitées debug et DebugMode_all_entity=true
    for(auto i:entities) i->draw(app);
-   //compte les asteroid
-  /* for (auto e : entities) {
-    if (e->name == "asteroid" && e->life)
-        Countasteroid++;
-}*/
+
    //affiche le score:
 
     Text scoreText;
@@ -280,22 +223,4 @@ if (DebugMode_asteroid)
 
    
     return 0;
-}
-
- //Fonction fermeture fenetre
-void InputHandler(Event event, RenderWindow& app)
-{
-  if (event.type == Event::KeyPressed)
-           
-          
-              //fermeture de la fenetre par echape ou par croix
-              if((Keyboard::isKeyPressed(Keyboard::Escape)))
-               
-              {
-                app.close();
-              }
-                if((event.type == Event::Closed))
-              {
-                app.close();
-              }
 }
